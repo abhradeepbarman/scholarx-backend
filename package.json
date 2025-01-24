@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "generate": "npx drizzle-kit generate",
+    "migrate": "npx drizzle-kit migrate"
   },
   "keywords": [],
   "author": "",
@@ -11,14 +13,17 @@
   "description": "",
   "dependencies": {
     "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.4",
     "express": "^4.21.2",
     "morgan": "^1.10.0",
+    "postgres": "^3.4.5",
     "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.10.10",
+    "drizzle-kit": "^0.30.2",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
