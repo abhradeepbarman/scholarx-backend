@@ -8,6 +8,20 @@
       "when": 1737768942481,
       "tag": "0000_thankful_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737816402094,
+      "tag": "0001_old_wilson_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737824760838,
+      "tag": "0002_pink_black_bird",
+      "breakpoints": true
     }
   ]
 }

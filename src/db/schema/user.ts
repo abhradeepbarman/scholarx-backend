@@ -1,14 +1,25 @@
-import { pgTable, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { UserRole } from "../../constants";
+import { relations } from "drizzle-orm";
+import students from "./student";
+import organizations from "./organization";
 
 const users = pgTable("users", {
     id: uuid("id").primaryKey().defaultRandom(),
-    full_name: varchar("full_name").notNull(),
     email: varchar("email").notNull().unique(),
-    phone: varchar("phone"),
     password: varchar("password").notNull(),
-    profilePicture: varchar("profile_picture"),
-    role: varchar("role").default(UserRole.STUDENT).notNull(),
+    role: varchar("role", {
+        enum: [UserRole.STUDENT, UserRole.ORGANIZATION],
+    }).notNull(),
+    created_at: timestamp("created_at").defaultNow(),
+    updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const userRelations = relations(users, ({ one }) => {
+    return {
+        students: one(students),
+        organizations: one(organizations),
+    };
 });
 
 export default users;
