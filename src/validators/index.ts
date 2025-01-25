@@ -1,0 +1,1 @@
+export { default as registerSchema } from "./v1/auth/register.validator";

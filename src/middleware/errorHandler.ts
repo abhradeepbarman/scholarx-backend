@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import CustomErrorHandler from "../utils/CustomErrorHandler";
 import ResponseHandler from "../utils/ResponseHandler";
+import { formatError } from "../service/helper";
 
 const errorHandler = (
     err: Error,
@@ -17,7 +18,7 @@ const errorHandler = (
     if (err instanceof ZodError) {
         statusCode = 422;
         errData = {
-            message: err.message,
+            message: formatError(err),
         };
     }
 

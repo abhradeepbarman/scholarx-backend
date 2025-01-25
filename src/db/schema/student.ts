@@ -2,7 +2,7 @@ import { date, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import users from "./user";
 import { AcademicLevel } from "../../constants";
 import { relations } from "drizzle-orm";
-import { applicaions } from "./application";
+import applicaions from "./application";
 
 const students = pgTable("students", {
     id: uuid("id").primaryKey().defaultRandom(),

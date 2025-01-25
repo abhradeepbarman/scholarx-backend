@@ -1,7 +1,7 @@
 import { date, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import users from "./user";
 import { relations } from "drizzle-orm";
-import { scholarships } from "./scholarship";
+import scholarships from "./scholarship";
 
 const organizations = pgTable("organizations", {
     id: uuid("id").primaryKey().defaultRandom(),

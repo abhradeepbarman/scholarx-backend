@@ -1,14 +1,10 @@
-import dotenv from "dotenv";
-import express, { Application, NextFunction, Request, Response } from "express";
-import logger from "./../logger";
-import morgan from "morgan";
-import errorHandler from "./middleware/errorHandler";
 import cors from "cors";
+import express, { Application, NextFunction, Request, Response } from "express";
+import morgan from "morgan";
+import logger from "./../logger";
 import config from "./config";
-
-dotenv.config({
-    path: "./.env",
-});
+import errorHandler from "./middleware/errorHandler";
+import { authRoutes } from "./routes";
 
 const app: Application = express();
 
@@ -55,6 +51,7 @@ app.get("/healthcheck", (req: Request, res: Response) => {
 });
 
 /* -------------------Routes----------------------- */
+app.use("/api/v1/auth", authRoutes);
 
 /* ----------------404 not found---------------- */
 app.use((req: Request, res: Response) => {
