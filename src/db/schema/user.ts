@@ -1,4 +1,10 @@
-import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import {
+    boolean,
+    pgTable,
+    timestamp,
+    uuid,
+    varchar,
+} from "drizzle-orm/pg-core";
 import { UserRole } from "../../constants";
 import { relations } from "drizzle-orm";
 import students from "./student";
@@ -11,6 +17,8 @@ const users = pgTable("users", {
     role: varchar("role", {
         enum: [UserRole.STUDENT, UserRole.ORGANIZATION],
     }).notNull(),
+    verified: boolean("verified").notNull().default(false),
+    refresh_token: varchar("refresh_token"),
     created_at: timestamp("created_at").defaultNow(),
     updated_at: timestamp("updated_at").defaultNow(),
 });

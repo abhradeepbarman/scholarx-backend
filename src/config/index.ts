@@ -12,6 +12,7 @@ const config = {
     MAIL_PASS: process.env.MAIL_PASS || "",
     MAIL_FROM: process.env.MAIL_FROM || "",
     MAIL_FROM_NAME: process.env.MAIL_FROM_NAME || "",
+    JWT_SECRET: process.env.JWT_SECRET || "",
 };
 
 export default config;
