@@ -1,13 +1,15 @@
+import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { NextFunction, Request, Response } from "express";
+import config from "../../config";
 import { db } from "../../db";
 import { users } from "../../db/schema";
+import { sendEmail } from "../../service/mail";
+import { welcomeEmail } from "../../template/welcomeEmail";
 import asyncHandler from "../../utils/asyncHandler";
-import { registerSchema } from "../../validators";
 import CustomErrorHandler from "../../utils/CustomErrorHandler";
-import bcrypt from "bcryptjs";
-import config from "../../config";
 import ResponseHandler from "../../utils/ResponseHandler";
+import { registerSchema } from "../../validators";
 
 const userRegister = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
@@ -23,7 +25,8 @@ const userRegister = asyncHandler(
         }
 
         // hash password
-        const hashedPassword = await bcrypt.hash(password, config.SALT);
+        const genSalt = await bcrypt.genSalt(Number(config.SALT))
+        const hashedPassword = await bcrypt.hash(password, genSalt);
 
         // create user
         const newUser = await db
@@ -38,9 +41,12 @@ const userRegister = asyncHandler(
             });
 
         // send success email
+        await sendEmail(email, "Welcome to ScholarX", welcomeEmail());
+
         // send success response
         return res.send(ResponseHandler(201, "User registered successfully"));
     }
 );
 
 export { userRegister };
+
