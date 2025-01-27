@@ -105,7 +105,6 @@ const userLogin = asyncHandler(
                 ResponseHandler(200, "Login successful", {
                     id: user?.id,
                     email: user?.email,
-                    role: user?.role,
                     accessToken,
                 })
             );
