@@ -5,7 +5,10 @@ import scholarships from "./scholarship";
 
 const organizations = pgTable("organizations", {
     id: uuid("id").primaryKey().defaultRandom(),
-    user_id: uuid("user_id").references(() => users.id),
+    user_id: uuid("user_id").references(() => users.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+    }),
     org_name: varchar("org_name").notNull(),
     contact_person: varchar("contact_person"),
     phone_number: varchar("phone_number"),

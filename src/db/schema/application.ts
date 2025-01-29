@@ -7,7 +7,10 @@ import scholarships from "./scholarship";
 const applicaions = pgTable("applications", {
     id: uuid("id").primaryKey().defaultRandom(),
     student_id: uuid("student_id").references(() => students.id),
-    scholarship_id: uuid("scholarship_id").references(() => scholarships.id),
+    scholarship_id: uuid("scholarship_id").references(() => scholarships.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+    }),
     status: varchar("status", {
         enum: [
             ScholarshipStatus.PENDING,

@@ -11,7 +11,12 @@ import { relations } from "drizzle-orm";
 
 const scholarships = pgTable("scholarships", {
     id: uuid("id").primaryKey().defaultRandom(),
-    org_id: uuid("org_id").references(() => organizations.id),
+    org_id: uuid("org_id")
+        .references(() => organizations.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        })
+        .notNull(),
     title: varchar("title").notNull(),
     description: varchar("description").notNull(),
     eligibility_criteria: varchar("eligibility_criteria").notNull(),

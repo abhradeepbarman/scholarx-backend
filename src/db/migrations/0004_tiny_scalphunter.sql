@@ -1,0 +1,1 @@
+ALTER TABLE "scholarships" ALTER COLUMN "org_id" SET NOT NULL;

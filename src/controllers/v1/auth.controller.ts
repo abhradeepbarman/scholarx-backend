@@ -9,8 +9,7 @@ import { welcomeEmail } from "../../template/welcomeEmail";
 import asyncHandler from "../../utils/asyncHandler";
 import CustomErrorHandler from "../../utils/CustomErrorHandler";
 import ResponseHandler from "../../utils/ResponseHandler";
-import { registerSchema } from "../../validators";
-import loginSchema from "../../validators/v1/auth/login.validator";
+import { loginSchema, registerSchema } from "../../validators";
 import jwt from "jsonwebtoken";
 
 const userRegister = asyncHandler(
@@ -47,11 +46,18 @@ const userRegister = asyncHandler(
         // send success email
         await sendEmail(email, "Welcome to ScholarX", welcomeEmail());
 
-        const accessToken = jwt.sign({ id: newUser[0].id }, config.JWT_SECRET, {
-            expiresIn: "1h",
-        });
+        const accessToken = jwt.sign(
+            {
+                id: newUser[0].id,
+                role: newUser[0].role,
+            },
+            config.JWT_SECRET,
+            {
+                expiresIn: "1h",
+            }
+        );
         const refreshToken = jwt.sign(
-            { id: newUser[0].id },
+            { id: newUser[0].id, role: newUser[0].role },
             config.JWT_SECRET,
             {
                 expiresIn: "7d",
@@ -100,12 +106,20 @@ const userLogin = asyncHandler(
         }
 
         // generate access, refresh token
-        const accessToken = jwt.sign({ id: user?.id }, config.JWT_SECRET, {
-            expiresIn: "1h",
-        });
-        const refreshToken = jwt.sign({ id: user?.id }, config.JWT_SECRET, {
-            expiresIn: "7d",
-        });
+        const accessToken = jwt.sign(
+            { id: user.id, role: user.role },
+            config.JWT_SECRET,
+            {
+                expiresIn: "1h",
+            }
+        );
+        const refreshToken = jwt.sign(
+            { id: user.id, role: user.role },
+            config.JWT_SECRET,
+            {
+                expiresIn: "7d",
+            }
+        );
 
         await db
             .update(users)
