@@ -6,7 +6,7 @@ import config from "../config";
 export const auth = async (req: any, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-        next(CustomErrorHandler.unAuthorized());
+        next(CustomErrorHandler.unAuthorized("Unauthorized Access"));
     }
 
     const token = authHeader?.split(" ")[1];
@@ -14,12 +14,12 @@ export const auth = async (req: any, res: Response, next: NextFunction) => {
     try {
         const user = jwt.verify(token!, config.JWT_SECRET);
         if (!user) {
-            next(CustomErrorHandler.unAuthorized());
+            next(CustomErrorHandler.unAuthorized("Unauthorized Access"));
         }
         req.user = user;
         next();
     } catch (error) {
         console.log(error);
-        next(CustomErrorHandler.unAuthorized());
+        next(CustomErrorHandler.unAuthorized("Something went wrong"));
     }
 };
