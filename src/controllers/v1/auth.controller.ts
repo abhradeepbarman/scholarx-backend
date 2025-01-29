@@ -25,7 +25,6 @@ const userRegister = asyncHandler(
         if (isExist) {
             next(CustomErrorHandler.alreadyExist("User already exists"));
         }
-
         // hash password
         const genSalt = await bcrypt.genSalt(Number(config.SALT));
         const hashedPassword = await bcrypt.hash(password, genSalt);
@@ -40,13 +39,40 @@ const userRegister = asyncHandler(
             })
             .returning({
                 id: users.id,
+                role: users.role,
             });
+
+        console.log(newUser);
 
         // send success email
         await sendEmail(email, "Welcome to ScholarX", welcomeEmail());
 
+        const accessToken = jwt.sign({ id: newUser[0].id }, config.JWT_SECRET, {
+            expiresIn: "1h",
+        });
+        const refreshToken = jwt.sign(
+            { id: newUser[0].id },
+            config.JWT_SECRET,
+            {
+                expiresIn: "7d",
+            }
+        );
+
+        await db
+            .update(users)
+            .set({
+                refresh_token: refreshToken,
+            })
+            .where(eq(users.id, newUser[0].id));
+
         // send success response
-        return res.send(ResponseHandler(201, "User registered successfully"));
+        return res.send(
+            ResponseHandler(201, "User registered successfully", {
+                id: newUser[0].id,
+                role: newUser[0].role,
+                access_token: accessToken,
+            })
+        );
     }
 );
 
