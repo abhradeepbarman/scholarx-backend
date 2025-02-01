@@ -30,7 +30,7 @@ const userRegister = asyncHandler(
         const genSalt = await bcrypt.genSalt(Number(config.SALT));
         const hashedPassword = await bcrypt.hash(password, genSalt);
 
-        let newUser: IUser[] = [];
+        let newUser: any;
 
         // Use transaction for user creation and role-specific inserts
         await db.transaction(async (tx) => {
@@ -42,7 +42,7 @@ const userRegister = asyncHandler(
                     password: hashedPassword,
                     role,
                 })
-                .returning()) as IUser[];
+                .returning());
 
             if (newUser.length === 0) {
                 throw new Error("User creation failed.");
