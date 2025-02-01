@@ -17,7 +17,7 @@ const applicaions = pgTable("applications", {
             ScholarshipStatus.APPROVED,
             ScholarshipStatus.REJECTED,
         ],
-    }),
+    }).default(ScholarshipStatus.PENDING),
     response: jsonb("response").notNull(),
     created_at: date("created_at").defaultNow(),
     updated_at: date("updated_at").defaultNow(),

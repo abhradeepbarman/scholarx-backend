@@ -60,6 +60,7 @@ const userRegister = asyncHandler(
 
         // send success response
         return res
+            .status(201)
             .cookie("refresh_token", refreshToken, {
                 httpOnly: true,
                 sameSite: "strict",
@@ -123,6 +124,7 @@ const userLogin = asyncHandler(
             .where(eq(users.id, user?.id!));
 
         return res
+            .status(200)
             .cookie("refresh_token", refreshToken, {
                 httpOnly: true,
                 sameSite: "strict",
