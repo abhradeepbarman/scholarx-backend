@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { NextFunction, Request, Response } from "express";
 import config from "../../config";
 import { db } from "../../db";
-import { users } from "../../db/schema";
+import { organizations, students, users } from "../../db/schema";
 import { sendEmail } from "../../service/mail";
 import { welcomeEmail } from "../../template/welcomeEmail";
 import asyncHandler from "../../utils/asyncHandler";
@@ -11,35 +11,57 @@ import CustomErrorHandler from "../../utils/CustomErrorHandler";
 import ResponseHandler from "../../utils/ResponseHandler";
 import { loginSchema, registerSchema } from "../../validators";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { UserRole } from "../../constants";
 
 const userRegister = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
         const { name, email, password, role } = registerSchema.parse(req.body);
 
-        // check if user already exists with this email
+        // Check if user already exists with this email
         const isExist = await db.query.users.findFirst({
             where: eq(users.email, email),
         });
 
         if (isExist) {
-            next(CustomErrorHandler.alreadyExist("User already exists"));
+            return next(CustomErrorHandler.alreadyExist("User already exists"));
         }
-        // hash password
+
+        // Hash password
         const genSalt = await bcrypt.genSalt(Number(config.SALT));
         const hashedPassword = await bcrypt.hash(password, genSalt);
 
-        // create user
-        const newUser = await db
-            .insert(users)
-            .values({
-                name,
-                email,
-                password: hashedPassword,
-                role,
-            })
-            .returning();
+        let newUser: IUser[] = [];
 
-        // send success email
+        // Use transaction for user creation and role-specific inserts
+        await db.transaction(async (tx) => {
+            newUser = (await tx
+                .insert(users)
+                .values({
+                    name,
+                    email,
+                    password: hashedPassword,
+                    role,
+                })
+                .returning()) as IUser[];
+
+            if (newUser.length === 0) {
+                throw new Error("User creation failed.");
+            }
+
+            if (role === UserRole.STUDENT) {
+                await tx.insert(students).values({
+                    name,
+                    user_id: newUser[0].id,
+                });
+            } else if (role === UserRole.ORGANIZATION) {
+                await tx.insert(organizations).values({
+                    name,
+                    user_id: newUser[0].id,
+                });
+            }
+        });
+
+        // Send success email
         await sendEmail(email, "Welcome to ScholarX", welcomeEmail());
 
         const payload: JwtPayload = { id: newUser[0].id };
@@ -58,19 +80,19 @@ const userRegister = asyncHandler(
             })
             .where(eq(users.id, newUser[0].id));
 
-        // send success response
+        // Send success response
         return res
             .status(201)
             .cookie("refresh_token", refreshToken, {
                 httpOnly: true,
                 sameSite: "strict",
-                secure: false,
+                secure: process.env.NODE_ENV === "production",
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             })
             .cookie("access_token", accessToken, {
                 httpOnly: true,
                 sameSite: "strict",
-                secure: false,
+                secure: process.env.NODE_ENV === "production",
                 maxAge: 60 * 60 * 1000,
             })
             .send(

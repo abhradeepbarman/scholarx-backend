@@ -10,6 +10,7 @@ const students = pgTable("students", {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
+    name: varchar("name").notNull(),
     date_of_birth: date("date_of_birth"),
     phone_number: varchar("phone_number"),
     address: varchar("address"),
@@ -29,8 +30,8 @@ export const studentRelations = relations(students, ({ one }) => {
             fields: [students.user_id],
             references: [users.id],
         }),
-        applicaions: one(applicaions)
-    }
-})
+        applicaions: one(applicaions),
+    };
+});
 
 export default students;
