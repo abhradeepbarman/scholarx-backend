@@ -5,3 +5,4 @@ export { default as CreateScholarshipSchema } from "./v1/scholarship/createSchol
 export { default as UpdateScholarshipSchema } from "./v1/scholarship/updateScholarship.validator";
 
 export { default as applyScholarshipSchema } from "./v1/application/applyScholarship.validator";
+export { default as editApplicationSchema } from "./v1/application/editApplication.validator";

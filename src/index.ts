@@ -4,7 +4,7 @@ import morgan from "morgan";
 import logger from "./../logger";
 import config from "./config";
 import errorHandler from "./middleware/errorHandler";
-import { authRoutes, scholarshipRoutes } from "./routes";
+import { applicationRoutes, authRoutes, scholarshipRoutes } from "./routes";
 
 const app: Application = express();
 
@@ -53,6 +53,7 @@ app.get("/healthcheck", (req: Request, res: Response) => {
 /* -------------------Routes----------------------- */
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/scholarship", scholarshipRoutes);
+app.use("/api/v1/application", applicationRoutes);
 
 /* ----------------404 not found---------------- */
 app.use((req: Request, res: Response) => {

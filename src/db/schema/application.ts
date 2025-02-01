@@ -6,7 +6,10 @@ import scholarships from "./scholarship";
 
 const applicaions = pgTable("applications", {
     id: uuid("id").primaryKey().defaultRandom(),
-    student_id: uuid("student_id").references(() => students.id),
+    student_id: uuid("student_id").references(() => students.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+    }),
     scholarship_id: uuid("scholarship_id").references(() => scholarships.id, {
         onDelete: "cascade",
         onUpdate: "cascade",

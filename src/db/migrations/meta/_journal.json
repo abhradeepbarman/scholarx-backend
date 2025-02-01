@@ -15,6 +15,13 @@
       "when": 1738379186194,
       "tag": "0001_sweet_colleen_wing",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1738390135373,
+      "tag": "0002_ambiguous_sunfire",
+      "breakpoints": true
     }
   ]
 }
