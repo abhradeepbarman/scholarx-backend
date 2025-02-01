@@ -10,11 +10,11 @@ import asyncHandler from "../../utils/asyncHandler";
 import CustomErrorHandler from "../../utils/CustomErrorHandler";
 import ResponseHandler from "../../utils/ResponseHandler";
 import { loginSchema, registerSchema } from "../../validators";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 const userRegister = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-        const { email, password, role } = registerSchema.parse(req.body);
+        const { name, email, password, role } = registerSchema.parse(req.body);
 
         // check if user already exists with this email
         const isExist = await db.query.users.findFirst({
@@ -32,37 +32,24 @@ const userRegister = asyncHandler(
         const newUser = await db
             .insert(users)
             .values({
+                name,
                 email,
                 password: hashedPassword,
                 role,
             })
-            .returning({
-                id: users.id,
-                role: users.role,
-            });
-
-        console.log(newUser);
+            .returning();
 
         // send success email
         await sendEmail(email, "Welcome to ScholarX", welcomeEmail());
 
-        const accessToken = jwt.sign(
-            {
-                id: newUser[0].id,
-                role: newUser[0].role,
-            },
-            config.JWT_SECRET,
-            {
-                expiresIn: "1h",
-            }
-        );
-        const refreshToken = jwt.sign(
-            { id: newUser[0].id, role: newUser[0].role },
-            config.JWT_SECRET,
-            {
-                expiresIn: "7d",
-            }
-        );
+        const payload: JwtPayload = { id: newUser[0].id };
+
+        const accessToken = jwt.sign(payload, config.JWT_SECRET, {
+            expiresIn: "1h",
+        });
+        const refreshToken = jwt.sign(payload, config.JWT_SECRET, {
+            expiresIn: "7d",
+        });
 
         await db
             .update(users)
@@ -72,13 +59,26 @@ const userRegister = asyncHandler(
             .where(eq(users.id, newUser[0].id));
 
         // send success response
-        return res.send(
-            ResponseHandler(201, "User registered successfully", {
-                id: newUser[0].id,
-                role: newUser[0].role,
-                access_token: accessToken,
+        return res
+            .cookie("refresh_token", refreshToken, {
+                httpOnly: true,
+                sameSite: "strict",
+                secure: false,
+                maxAge: 7 * 24 * 60 * 60 * 1000,
             })
-        );
+            .cookie("access_token", accessToken, {
+                httpOnly: true,
+                sameSite: "strict",
+                secure: false,
+                maxAge: 60 * 60 * 1000,
+            })
+            .send(
+                ResponseHandler(201, "User registered successfully", {
+                    id: newUser[0].id,
+                    role: newUser[0].role,
+                    access_token: accessToken,
+                })
+            );
     }
 );
 
@@ -106,20 +106,14 @@ const userLogin = asyncHandler(
         }
 
         // generate access, refresh token
-        const accessToken = jwt.sign(
-            { id: user.id, role: user.role },
-            config.JWT_SECRET,
-            {
-                expiresIn: "1h",
-            }
-        );
-        const refreshToken = jwt.sign(
-            { id: user.id, role: user.role },
-            config.JWT_SECRET,
-            {
-                expiresIn: "7d",
-            }
-        );
+        const payload: JwtPayload = { id: user.id };
+
+        const accessToken = jwt.sign(payload, config.JWT_SECRET, {
+            expiresIn: "1h",
+        });
+        const refreshToken = jwt.sign(payload, config.JWT_SECRET, {
+            expiresIn: "7d",
+        });
 
         await db
             .update(users)
@@ -154,12 +148,13 @@ const userLogin = asyncHandler(
 const userLogout = asyncHandler(
     async (req: any, res: Response, next: NextFunction) => {
         const { id } = req.user;
+
         await db
             .update(users)
             .set({
                 refresh_token: null,
             })
-            .where(eq(users.id, req.user?.id!));
+            .where(eq(users.id, id));
 
         return res
             .clearCookie("refresh_token", {
@@ -170,4 +165,69 @@ const userLogout = asyncHandler(
     }
 );
 
-export { userRegister, userLogin, userLogout };
+const refreshAccessToken = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+        const { refresh_token } = req.cookies || req.body;
+
+        if (!refresh_token) {
+            next(CustomErrorHandler.unAuthorized("Unauthorized Access"));
+        }
+
+        const decoded: any = jwt.verify(refresh_token!, config.JWT_SECRET);
+
+        const user = await db.query.users.findFirst({
+            where: eq(users.id, decoded.id),
+        });
+
+        if (!user) {
+            next(CustomErrorHandler.notFound("User not found"));
+        }
+
+        if (user?.refresh_token !== refresh_token) {
+            next(
+                CustomErrorHandler.notAllowed(
+                    "Refresh token is expired or used"
+                )
+            );
+        }
+
+        // generate access, refresh token
+        const payload: JwtPayload = { id: user?.id };
+
+        const accessToken = jwt.sign(payload, config.JWT_SECRET, {
+            expiresIn: "1h",
+        });
+        const refreshToken = jwt.sign(payload, config.JWT_SECRET, {
+            expiresIn: "7d",
+        });
+
+        await db
+            .update(users)
+            .set({
+                refresh_token: refreshToken,
+            })
+            .where(eq(users.id, user?.id!));
+
+        return res
+            .cookie("refresh_token", refreshToken, {
+                httpOnly: true,
+                sameSite: "strict",
+                secure: false,
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+            })
+            .cookie("access_token", accessToken, {
+                httpOnly: true,
+                sameSite: "strict",
+                secure: false,
+                maxAge: 60 * 60 * 1000,
+            })
+            .send(
+                ResponseHandler(200, "Access token refresh successful", {
+                    id: user?.id,
+                    access_token: accessToken,
+                })
+            );
+    }
+);
+
+export { userRegister, userLogin, userLogout, refreshAccessToken };

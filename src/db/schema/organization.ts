@@ -9,7 +9,6 @@ const organizations = pgTable("organizations", {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
-    org_name: varchar("org_name").notNull(),
     contact_person: varchar("contact_person"),
     phone_number: varchar("phone_number"),
     address: varchar("address"),

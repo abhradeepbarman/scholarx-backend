@@ -23,6 +23,7 @@ const scholarships = pgTable("scholarships", {
     deadline: date("deadline").notNull(),
     amount: integer("amount").notNull(),
     requirements: jsonb("requirements").notNull(),
+    location: varchar("location").notNull(),
     created_at: date("created_at").defaultNow(),
     updated_at: date("updated_at").defaultNow(),
 });

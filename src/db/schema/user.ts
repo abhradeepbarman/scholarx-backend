@@ -12,12 +12,12 @@ import organizations from "./organization";
 
 const users = pgTable("users", {
     id: uuid("id").primaryKey().defaultRandom(),
+    name: varchar("name").notNull(),
     email: varchar("email").notNull().unique(),
     password: varchar("password").notNull(),
     role: varchar("role", {
         enum: [UserRole.STUDENT, UserRole.ORGANIZATION],
     }).notNull(),
-    verified: boolean("verified").notNull().default(false),
     refresh_token: varchar("refresh_token"),
     created_at: timestamp("created_at").defaultNow(),
     updated_at: timestamp("updated_at").defaultNow(),
