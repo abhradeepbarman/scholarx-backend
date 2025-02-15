@@ -30,11 +30,10 @@ const scholarships = pgTable("scholarships", {
 
 export const scholarshipRelations = relations(scholarships, ({ one, many }) => {
     return {
-        organizations: one(organizations, {
+        organization: one(organizations, {
             fields: [scholarships.org_id],
             references: [organizations.id],
         }),
-        scholarships: many(scholarships),
     };
 });
 

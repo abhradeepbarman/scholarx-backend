@@ -3,6 +3,7 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import logger from "./../logger";
 import config from "./config";
+import cookieParser from "cookie-parser";
 import errorHandler from "./middleware/errorHandler";
 import { applicationRoutes, authRoutes, scholarshipRoutes } from "./routes";
 
@@ -11,6 +12,7 @@ const app: Application = express();
 /* -------------------Middlewares------------------- */
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(cookieParser());
 app.use(
     cors({
         origin: [config.ORIGIN_FRONTEND],

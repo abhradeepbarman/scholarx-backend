@@ -49,12 +49,22 @@ const getScholarshipDetails = asyncHandler(
     async (req: any, res: Response, next: NextFunction) => {
         const { scholarshipId } = req.params;
 
-        const scholarshipDetails = await db.query.scholarships.findFirst({
-            where: eq(scholarships.id, scholarshipId),
-        });
+        const scholarshipDetails = await db
+            .select()
+            .from(scholarships)
+            .where(eq(scholarships.id, scholarshipId))
+            .innerJoin(
+                organizations,
+                eq(organizations.id, scholarships.org_id)
+            );
 
         if (!scholarshipDetails) {
             next(CustomErrorHandler.notFound("Scholarship not found"));
+        }
+
+        const result = {
+            ...scholarshipDetails[0].scholarships,
+            organization: scholarshipDetails[0].organizations,
         }
 
         return res
@@ -63,7 +73,7 @@ const getScholarshipDetails = asyncHandler(
                 ResponseHandler(
                     200,
                     "Scholarship details fetched successfully",
-                    scholarshipDetails
+                    result
                 )
             );
     }
@@ -71,14 +81,15 @@ const getScholarshipDetails = asyncHandler(
 
 const getAllScholarships = asyncHandler(
     async (req: any, res: Response, next: NextFunction) => {
-        const scholarships = await db.query.scholarships.findMany();
+        const allScholarships = await db.select().from(scholarships);
+        
         return res
             .status(200)
             .send(
                 ResponseHandler(
                     200,
                     "All scholarships fetched successfully",
-                    scholarships
+                    allScholarships
                 )
             );
     }

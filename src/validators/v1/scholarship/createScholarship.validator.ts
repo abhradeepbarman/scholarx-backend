@@ -6,7 +6,7 @@ const CreateScholarshipSchema = z.object({
     eligibility_criteria: z.string({
         message: "Eligibility criteria is required",
     }),
-    deadline: z.date({ message: "Deadline is required" }),
+    deadline: z.string({ message: "Deadline is required" }),
     amount: z.number({ message: "Amount is required" }),
     requirements: z.any({ message: "Requirements are required" }),
     location: z.string({ message: "Location is required" }),
