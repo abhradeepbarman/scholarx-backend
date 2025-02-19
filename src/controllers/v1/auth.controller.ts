@@ -211,7 +211,7 @@ const refreshAccessToken = asyncHandler(
         if (user?.refresh_token !== refresh_token) {
             next(
                 CustomErrorHandler.notAllowed(
-                    "Refresh token is expired or used"
+                    "Refresh token not matched"
                 )
             );
         }
@@ -249,6 +249,7 @@ const refreshAccessToken = asyncHandler(
             .send(
                 ResponseHandler(200, "Access token refresh successful", {
                     id: user?.id,
+                    role: user?.role,
                     access_token: accessToken,
                 })
             );
