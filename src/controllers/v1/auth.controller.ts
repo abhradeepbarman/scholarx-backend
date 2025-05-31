@@ -99,7 +99,7 @@ const userRegister = asyncHandler(
                 ResponseHandler(201, "User registered successfully", {
                     id: newUser[0].id,
                     role: newUser[0].role,
-                    access_token: accessToken,
+                    access_token: accessToken
                 })
             );
     }

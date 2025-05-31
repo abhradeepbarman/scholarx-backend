@@ -1,5 +1,5 @@
 {
-  "id": "0116ff90-fa38-4b03-a237-d6a48f773d4d",
+  "id": "f23ec60e-187e-48e8-bb91-889607964c34",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -31,7 +31,8 @@
           "name": "status",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'PENDING'"
         },
         "response": {
           "name": "response",
@@ -66,8 +67,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "applications_scholarship_id_scholarships_id_fk": {
           "name": "applications_scholarship_id_scholarships_id_fk",
@@ -105,6 +106,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
         },
         "contact_person": {
           "name": "contact_person",
@@ -273,6 +280,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
         },
         "date_of_birth": {
           "name": "date_of_birth",
