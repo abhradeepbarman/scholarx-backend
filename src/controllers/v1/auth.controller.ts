@@ -34,7 +34,7 @@ const userRegister = asyncHandler(
 
         // Use transaction for user creation and role-specific inserts
         await db.transaction(async (tx) => {
-            newUser = (await tx
+            newUser = await tx
                 .insert(users)
                 .values({
                     name,
@@ -42,7 +42,7 @@ const userRegister = asyncHandler(
                     password: hashedPassword,
                     role,
                 })
-                .returning());
+                .returning();
 
             if (newUser.length === 0) {
                 throw new Error("User creation failed.");
@@ -99,7 +99,7 @@ const userRegister = asyncHandler(
                 ResponseHandler(201, "User registered successfully", {
                     id: newUser[0].id,
                     role: newUser[0].role,
-                    access_token: accessToken
+                    access_token: accessToken,
                 })
             );
     }
@@ -209,11 +209,7 @@ const refreshAccessToken = asyncHandler(
         }
 
         if (user?.refresh_token !== refresh_token) {
-            next(
-                CustomErrorHandler.notAllowed(
-                    "Refresh token not matched"
-                )
-            );
+            next(CustomErrorHandler.notAllowed("Refresh token not matched"));
         }
 
         // generate access, refresh token
