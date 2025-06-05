@@ -2,7 +2,7 @@ import { date, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import users from "./user";
 import { AcademicLevel } from "../../constants";
 import { relations } from "drizzle-orm";
-import applicaions from "./application";
+import applications from "./application";
 
 const students = pgTable("students", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -24,13 +24,13 @@ const students = pgTable("students", {
     updated_at: date("updated_at").defaultNow(),
 });
 
-export const studentRelations = relations(students, ({ one }) => {
+export const studentRelations = relations(students, ({ one, many }) => {
     return {
         users: one(users, {
             fields: [students.user_id],
             references: [users.id],
         }),
-        applicaions: one(applicaions),
+        applications: many(applications),
     };
 });
 

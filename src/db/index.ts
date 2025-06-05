@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import config from "../config";
 import {
-    applicaions,
+    applications,
     organizations,
     scholarships,
     students,
@@ -14,7 +14,7 @@ const schema = {
     students,
     organizations,
     scholarships,
-    applicaions,
+    applications,
 };
 
 const client = postgres(config.DATABASE_URL!);

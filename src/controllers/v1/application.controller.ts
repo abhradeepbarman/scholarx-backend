@@ -1,20 +1,19 @@
+import { eq } from "drizzle-orm";
 import { NextFunction, Response } from "express";
-import asyncHandler from "../../utils/asyncHandler";
+import { db } from "../../db";
 import {
-    applyScholarshipSchema,
-    editApplicationSchema,
-} from "../../validators";
-import {
-    applicaions,
+    applications,
     organizations,
     scholarships,
     students,
 } from "../../db/schema";
-import { db } from "../../db";
-import { eq } from "drizzle-orm";
+import asyncHandler from "../../utils/asyncHandler";
 import CustomErrorHandler from "../../utils/CustomErrorHandler";
-import { ScholarshipStatus } from "../../constants";
 import ResponseHandler from "../../utils/ResponseHandler";
+import {
+    applyScholarshipSchema,
+    editApplicationSchema,
+} from "../../validators";
 
 const applyScholarship = asyncHandler(
     async (req: any, res: Response, next: NextFunction) => {
@@ -38,10 +37,10 @@ const applyScholarship = asyncHandler(
             next(CustomErrorHandler.notFound("Student not found"));
         }
 
-        const newApplication = await db.insert(applicaions).values({
+        const newApplication = await db.insert(applications).values({
             student_id: studentDetails?.id,
             scholarship_id: scholarshipDetails?.id,
-            status: ScholarshipStatus.PENDING,
+            status: "pending",
             response: body.response,
         });
 
@@ -63,8 +62,8 @@ const editApplication = asyncHandler(
         const body = editApplicationSchema.parse(req.body);
         const { id } = req.user;
 
-        const applicationDetails = await db.query.applicaions.findFirst({
-            where: eq(applicaions.id, applicationId),
+        const applicationDetails = await db.query.applications.findFirst({
+            where: eq(applications.id, applicationId),
         });
 
         if (!applicationDetails) {
@@ -88,12 +87,12 @@ const editApplication = asyncHandler(
         }
 
         const updatedScholarship = await db
-            .update(applicaions)
+            .update(applications)
             .set({
                 response: body.response,
                 updated_at: new Date().toISOString(),
             })
-            .where(eq(applicaions.id, applicationId))
+            .where(eq(applications.id, applicationId))
             .returning();
 
         return res
@@ -109,8 +108,8 @@ const deleteApplication = asyncHandler(
         const { applicationId } = req.params;
         const { id } = req.user;
 
-        const applicationDetails = await db.query.applicaions.findFirst({
-            where: eq(applicaions.id, applicationId),
+        const applicationDetails = await db.query.applications.findFirst({
+            where: eq(applications.id, applicationId),
         });
 
         if (!applicationDetails) {
@@ -134,8 +133,8 @@ const deleteApplication = asyncHandler(
         }
 
         const deletedApplication = await db
-            .delete(applicaions)
-            .where(eq(applicaions.id, applicationId))
+            .delete(applications)
+            .where(eq(applications.id, applicationId))
             .returning();
 
         return res
@@ -152,8 +151,8 @@ const updateApplicationStatus = asyncHandler(
         const { id } = req.user;
         const { status } = req.query;
 
-        const applicationDetails = await db.query.applicaions.findFirst({
-            where: eq(applicaions.id, applicationId),
+        const applicationDetails = await db.query.applications.findFirst({
+            where: eq(applications.id, applicationId),
         });
 
         if (!applicationDetails) {
@@ -185,9 +184,9 @@ const updateApplicationStatus = asyncHandler(
         }
 
         const updatedApplicationStatus = await db
-            .update(applicaions)
+            .update(applications)
             .set({ status })
-            .where(eq(applicaions.id, applicationId))
+            .where(eq(applications.id, applicationId))
             .returning();
 
         return res
@@ -234,8 +233,8 @@ const getScholarshipApplications = asyncHandler(
             );
         }
 
-        const applications = await db.query.applicaions.findMany({
-            where: eq(applicaions.scholarship_id, scholarshipId),
+        const applicants = await db.query.applications.findMany({
+            where: eq(applications.scholarship_id, scholarshipId),
         });
 
         return res
@@ -244,7 +243,7 @@ const getScholarshipApplications = asyncHandler(
                 ResponseHandler(
                     200,
                     "Applications fetched successfully",
-                    applications
+                    applicants
                 )
             );
     }
@@ -254,8 +253,8 @@ const getApplicationDetails = asyncHandler(
     async (req: any, res: Response, next: NextFunction) => {
         const { applicationId } = req.params;
 
-        const applicationDetails = await db.query.applicaions.findFirst({
-            where: eq(applicaions.id, applicationId),
+        const applicationDetails = await db.query.applications.findFirst({
+            where: eq(applications.id, applicationId),
         });
 
         if (!applicationDetails) {
@@ -276,9 +275,9 @@ const getApplicationDetails = asyncHandler(
 
 export {
     applyScholarship,
-    editApplication,
     deleteApplication,
-    updateApplicationStatus,
-    getScholarshipApplications,
+    editApplication,
     getApplicationDetails,
+    getScholarshipApplications,
+    updateApplicationStatus,
 };

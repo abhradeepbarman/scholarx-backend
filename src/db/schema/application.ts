@@ -1,10 +1,9 @@
 import { date, jsonb, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import students from "./student";
-import { ScholarshipStatus } from "../../constants";
 import { relations } from "drizzle-orm";
 import scholarships from "./scholarship";
 
-const applicaions = pgTable("applications", {
+const applications = pgTable("applications", {
     id: uuid("id").primaryKey().defaultRandom(),
     student_id: uuid("student_id").references(() => students.id, {
         onDelete: "cascade",
@@ -15,28 +14,24 @@ const applicaions = pgTable("applications", {
         onUpdate: "cascade",
     }),
     status: varchar("status", {
-        enum: [
-            ScholarshipStatus.PENDING,
-            ScholarshipStatus.APPROVED,
-            ScholarshipStatus.REJECTED,
-        ],
-    }).default(ScholarshipStatus.PENDING),
+        enum: ["pending", "accepted", "rejected"],
+    }).default("pending"),
     response: jsonb("response").notNull(),
     created_at: date("created_at").defaultNow(),
     updated_at: date("updated_at").defaultNow(),
 });
 
-export const applicationRelations = relations(applicaions, ({ one }) => {
+export const applicationRelations = relations(applications, ({ one }) => {
     return {
-        students: one(students, {
-            fields: [applicaions.student_id],
+        student: one(students, {
+            fields: [applications.student_id],
             references: [students.id],
         }),
-        scholarships: one(scholarships, {
-            fields: [applicaions.scholarship_id],
+        scholarship: one(scholarships, {
+            fields: [applications.scholarship_id],
             references: [scholarships.id],
         }),
     };
 });
 
-export default applicaions;
+export default applications;

@@ -6,7 +6,7 @@ import {
 } from "../../validators";
 import { db } from "../../db";
 import { eq } from "drizzle-orm";
-import { organizations, scholarships } from "../../db/schema";
+import { organizations, scholarships, applications } from "../../db/schema";
 import CustomErrorHandler from "../../utils/CustomErrorHandler";
 import ResponseHandler from "../../utils/ResponseHandler";
 
@@ -65,7 +65,7 @@ const getScholarshipDetails = asyncHandler(
         const result = {
             ...scholarshipDetails[0].scholarships,
             organization: scholarshipDetails[0].organizations,
-        }
+        };
 
         return res
             .status(200)
@@ -82,7 +82,7 @@ const getScholarshipDetails = asyncHandler(
 const getAllScholarships = asyncHandler(
     async (req: any, res: Response, next: NextFunction) => {
         const allScholarships = await db.select().from(scholarships);
-        
+
         return res
             .status(200)
             .send(
@@ -200,22 +200,53 @@ const getScholarshipsOrg = asyncHandler(
     async (req: any, res: Response, next: NextFunction) => {
         const { id } = req.user;
 
+        // Get organization details
         const orgDetails = await db.query.organizations.findFirst({
             where: eq(organizations.user_id, id),
         });
 
         if (!orgDetails) {
-            next(CustomErrorHandler.notFound("Organization not found"));
+            return next(CustomErrorHandler.notFound("Organization not found"));
         }
 
-        const scholarshipsOrg = await db.query.scholarships.findMany({
-            where: orgDetails?.id
-                ? eq(scholarships.org_id, orgDetails.id)
-                : undefined,
-        });
+        // Get scholarships with applicant count using direct query
+        const scholarshipsWithCount = await db
+            .select({
+                id: scholarships.id,
+                title: scholarships.title,
+                description: scholarships.description,
+                eligibility_criteria: scholarships.eligibility_criteria,
+                deadline: scholarships.deadline,
+                amount: scholarships.amount,
+                requirements: scholarships.requirements,
+                location: scholarships.location,
+                // status: scholarships.status,
+                created_at: scholarships.created_at,
+                updated_at: scholarships.updated_at,
+                // applicant_count: db.fn.count(applications.id),
+            })
+            .from(scholarships)
+            .leftJoin(
+                applications,
+                eq(applications.scholarship_id, scholarships.id)
+            )
+            .where(eq(scholarships.org_id, orgDetails.id))
+            .groupBy(
+                scholarships.id,
+                scholarships.title,
+                scholarships.description,
+                scholarships.eligibility_criteria,
+                scholarships.deadline,
+                scholarships.amount,
+                scholarships.requirements,
+                scholarships.location,
+                // scholarships.status,
+                scholarships.created_at,
+                scholarships.updated_at
+            );
 
-        if (!scholarshipsOrg.length) {
-            next(CustomErrorHandler.notFound("No scholarships found"));
+        if (!scholarshipsWithCount.length) {
+            return next(CustomErrorHandler.notFound("No scholarships found"));
         }
 
         return res
@@ -223,8 +254,8 @@ const getScholarshipsOrg = asyncHandler(
             .send(
                 ResponseHandler(
                     200,
-                    "Scholarships fetched successfully",
-                    scholarshipsOrg
+                    "Organization scholarships fetched successfully with applicant counts",
+                    scholarshipsWithCount
                 )
             );
     }

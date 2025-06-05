@@ -5,7 +5,7 @@ import logger from "./../logger";
 import config from "./config";
 import cookieParser from "cookie-parser";
 import errorHandler from "./middleware/errorHandler";
-import { applicationRoutes, authRoutes, scholarshipRoutes } from "./routes";
+import { applicationRoutes, authRoutes, chatRoutes, orgRoutes, scholarshipRoutes } from "./routes";
 
 const app: Application = express();
 
@@ -56,6 +56,8 @@ app.get("/healthcheck", (req: Request, res: Response) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/scholarship", scholarshipRoutes);
 app.use("/api/v1/application", applicationRoutes);
+app.use("/api/v1/org", orgRoutes);
+app.use("/api/chat", chatRoutes);
 
 /* ----------------404 not found---------------- */
 app.use((req: Request, res: Response) => {

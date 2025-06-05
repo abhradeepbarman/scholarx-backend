@@ -8,6 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 import organizations from "./organization";
 import { relations } from "drizzle-orm";
+import applications from "./application";
 
 const scholarships = pgTable("scholarships", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -34,6 +35,7 @@ export const scholarshipRelations = relations(scholarships, ({ one, many }) => {
             fields: [scholarships.org_id],
             references: [organizations.id],
         }),
+        applications: many(applications),
     };
 });
 
